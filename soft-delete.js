@@ -52,8 +52,10 @@ const configure = options => {
  * @returns {void}
  */
 export const addDeleted = selector => {
-  if ((Object.keys(selector).length === 1 && selector._id) || selector[config.deleted]) {
-    return;
+  if (selector[config.deleted]) return;
+
+  if (typeof selector === 'string') {
+    selector = { _id: selector };
   }
 
   selector[config.deleted] = false;
@@ -89,7 +91,8 @@ export const SoftDelete = Object.freeze({
  */
 Mongo.Collection.prototype.softRemoveAsync = async function(selector, options = {}) {
   const { deleted, deletedAt } = config;
-  return this.updateAsync(selector, { $set: { [deleted]: true, updatedAt: new Date(), ...(deletedAt && {[deletedAt]: new Date()}) }}, {  multi: true, ...options });
+  const now = new Date();
+  return this.updateAsync(selector, { $set: { [deleted]: true, updatedAt: now, ...(deletedAt && {[deletedAt]: now}) }}, {  multi: true, ...options });
 }
 
 /**
