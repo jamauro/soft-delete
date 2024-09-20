@@ -5,7 +5,7 @@ Soft Delete is an easy way to add soft deletes to your Meteor app. Its key featu
 * Zero config needed (though you can customize)
 * Isomorphic so that it works with Optimistic UI
 * Automatically overrides `removeAsync` to make it a soft delete
-* Automatically adds the soft delete flag to the filter for your queries, e.g. `.find`, so you don't need to make any changes to them
+* Automatically adds the soft delete flag on `insertAsync` and to the filter for your queries, e.g. `.find`, so you don't need to make any changes to them
 * Recover soft deleted docs with `recoverAsync` collection method
 * Explicitly soft delete with `softRemoveAsync` collection method (optional)
 * Optionally add a `deletedAt` timestamp

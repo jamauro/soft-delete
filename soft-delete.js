@@ -1,4 +1,5 @@
 import { Mongo } from 'meteor/mongo';
+import { Accounts } from 'meteor/accounts-base';
 import { check, Match } from 'meteor/check';
 
 const autoFilterMethods = ['find', 'findOne', 'findOneAsync', 'count', 'countAsync', 'countDocuments', 'estimatedDocumentCount'];
@@ -52,7 +53,7 @@ const configure = options => {
  * @returns {void}
  */
 export const addDeleted = selector => {
-  if (selector[config.deleted]) return;
+  if (selector[config.deleted] !== undefined) return;
 
   if (typeof selector === 'string') {
     selector = { _id: selector };
@@ -114,6 +115,19 @@ Mongo.Collection.prototype.recoverAsync = async function(selector) {
 
 Meteor.startup(() => {
   const { overrideRemove, autoFilter, deleted, deletedAt } = config;
+
+  const originalInsert = Mongo.Collection.prototype.insertAsync;
+  Mongo.Collection.prototype.insertAsync = async function(...args) {
+    addDeleted(args[0]);
+    return originalInsert.apply(this, args);
+  }
+
+  if (Meteor.isServer) {
+    Accounts.onCreateUser((options, user) => {
+      addDeleted(user)
+      return user;
+    });
+  }
 
   if (overrideRemove) {
     const originalRemove = Mongo.Collection.prototype.removeAsync;

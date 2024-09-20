@@ -1,5 +1,6 @@
 import { Tinytest } from 'meteor/tinytest';
 import { Mongo } from 'meteor/mongo';
+import { Accounts } from 'meteor/accounts-base';
 import { SoftDelete, addDeleted } from 'meteor/jam:soft-delete';
 
 const collection = new Mongo.Collection('test');
@@ -125,6 +126,28 @@ Tinytest.addAsync('findOneAsync with string selector', async function (test) {
   }
 });
 
+Tinytest.addAsync('deleted is automatically added on insert', async function (test) {
+  await Meteor.callAsync('reset');
+  const doc = { _id: 'doc7', name: 'Test Doc' };
+
+  await Meteor.callAsync('insertDoc', doc);
+
+  const foundDoc = await collection.findOneAsync(doc._id);
+
+  if (Meteor.isServer) {
+    test.equal(foundDoc.deleted, false);
+  }
+});
+
+if (Meteor.isServer) {
+  Tinytest.addAsync('deleted is automatically added when creating a user', async function (test) {
+    await Meteor.users.removeAsync({}, { soft: false })
+    await Accounts.createUserAsync({ username: 'bob', password: '1234' });
+
+    const bob = await Meteor.users.findOneAsync({ username: 'bob' })
+    test.equal(bob.deleted, false);
+  });
+}
 
 Tinytest.add('configure', function (test) {
   const newConfig = {
