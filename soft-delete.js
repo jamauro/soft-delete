@@ -123,10 +123,11 @@ Meteor.startup(() => {
   }
 
   if (Meteor.isServer) {
-    Accounts.onCreateUser((options, user) => {
-      addDeleted(user)
-      return user;
-    });
+    const originalInsertUser = Accounts.insertUserDoc;
+    Accounts.insertUserDoc = async function (options, user) {
+      addDeleted(user);
+      return originalInsertUser.call(this, options, user);
+    }
   }
 
   if (overrideRemove) {

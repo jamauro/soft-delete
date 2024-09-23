@@ -1,6 +1,6 @@
 Package.describe({
   name: 'jam:soft-delete',
-  version: '0.2.0',
+  version: '0.2.1',
   summary: 'An easy way to add soft deletes to your Meteor app',
   git: 'https://github.com/jamauro/soft-delete',
   documentation: 'README.md'

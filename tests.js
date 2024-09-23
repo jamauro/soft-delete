@@ -142,10 +142,20 @@ Tinytest.addAsync('deleted is automatically added on insert', async function (te
 if (Meteor.isServer) {
   Tinytest.addAsync('deleted is automatically added when creating a user', async function (test) {
     await Meteor.users.removeAsync({}, { soft: false })
-    await Accounts.createUserAsync({ username: 'bob', password: '1234' });
+    await Accounts.onCreateUser((options, user) => {
+      user.something = 'something';
+      return user;
+    });
 
-    const bob = await Meteor.users.findOneAsync({ username: 'bob' })
-    test.equal(bob.deleted, false);
+    try {
+      await Accounts.createUserAsync({ username: 'bob', password: '1234' });
+
+      const bob = await Meteor.users.findOneAsync({ username: 'bob' })
+      test.equal(bob.deleted, false);
+      test.equal(bob.something, 'something');
+    } catch (error) {
+      test.equal('should not be reached', true)
+    }
   });
 }
 
