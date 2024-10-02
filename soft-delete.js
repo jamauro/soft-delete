@@ -10,6 +10,7 @@ const autoFilterMethods = ['find', 'findOne', 'findOneAsync', 'count', 'countAsy
  * @property {string} deletedAt - The field name used for the deletedAt timestamp
  * @property {boolean} autoFilter - Automatically filter queries with the deleted flag
  * @property {boolean} overrideRemove - Automatically override the remove method to make it a soft delete
+ * @property {string[]} exclude - Exclude collections by name from using the soft delete mechanism
  */
 
 /**
@@ -22,6 +23,7 @@ const config = {
   deletedAt: '',
   autoFilter: true,
   overrideRemove: true,
+  exclude: ['roles', 'role-assignment']
 };
 
 /**
@@ -40,6 +42,7 @@ const configure = options => {
     deletedAt: Match.Maybe(String),
     autoFilter: Match.Maybe(Boolean),
     overrideRemove: Match.Maybe(Boolean),
+    exclude: Match.Maybe([String])
   });
 
   return Object.assign(config, options);
@@ -114,18 +117,18 @@ Mongo.Collection.prototype.recoverAsync = async function(selector) {
 }
 
 Meteor.startup(() => {
-  const { overrideRemove, autoFilter, deleted, deletedAt } = config;
+  const { overrideRemove, autoFilter, deleted, deletedAt, exclude } = config;
 
   const originalInsert = Mongo.Collection.prototype.insertAsync;
   Mongo.Collection.prototype.insertAsync = async function(...args) {
-    addDeleted(args[0]);
+    if (!exclude.includes(this._name)) addDeleted(args[0]);
     return originalInsert.apply(this, args);
   }
 
   if (Meteor.isServer) {
     const originalInsertUser = Accounts.insertUserDoc;
     Accounts.insertUserDoc = async function (options, user) {
-      addDeleted(user);
+      if (!exclude.includes('users')) addDeleted(user);
       return originalInsertUser.call(this, options, user);
     }
   }
@@ -133,7 +136,7 @@ Meteor.startup(() => {
   if (overrideRemove) {
     const originalRemove = Mongo.Collection.prototype.removeAsync;
     Mongo.Collection.prototype.removeAsync = async function(selector, options = {}) {
-      if (options.soft === false) {
+      if (options.soft === false || exclude.includes(this._name)) {
         return originalRemove.call(this, selector);
       }
 
@@ -146,14 +149,9 @@ Meteor.startup(() => {
       const originalMethod = Mongo.Collection.prototype[method];
 
       Mongo.Collection.prototype[method] = function(selector = {}, options = {}) {
-        addDeleted(selector);
+        if (!exclude.includes(this._name)) addDeleted(selector);
         return originalMethod.call(this, selector, options);
       }
     }
   }
 });
-
-
-
-
-

@@ -4,14 +4,24 @@ import { Accounts } from 'meteor/accounts-base';
 import { SoftDelete, addDeleted } from 'meteor/jam:soft-delete';
 
 const collection = new Mongo.Collection('test');
+const dogs = new Mongo.Collection('dogs');
+
+const config = {
+  exclude: ['dogs']
+};
+SoftDelete.configure(config);
 
 const insertDoc = async doc => collection.insertAsync(doc);
 const removeDoc = async (selector, options) => collection.removeAsync(selector, options);
 const softRemoveDoc = async selector => collection.softRemoveAsync(selector);
 const recoverDoc = async selector => collection.recoverAsync(selector);
-const reset = () => collection.removeAsync({}, { soft: false });
+const reset = async () => collection.removeAsync({}, { soft: false });
 
-Meteor.methods({ insertDoc, removeDoc, softRemoveDoc, recoverDoc, reset });
+const insertDog = async doc => dogs.insertAsync(doc);
+const removeDog = async (selector, options) => dogs.removeAsync(selector, options);
+const resetDogs = async () => dogs.removeAsync({});
+
+Meteor.methods({ insertDoc, removeDoc, softRemoveDoc, recoverDoc, reset, insertDog, removeDog, resetDogs });
 
 Tinytest.add('addDeleted', function (test) {
   let selector = {};
@@ -151,6 +161,7 @@ if (Meteor.isServer) {
       await Accounts.createUserAsync({ username: 'bob', password: '1234' });
 
       const bob = await Meteor.users.findOneAsync({ username: 'bob' })
+
       test.equal(bob.deleted, false);
       test.equal(bob.something, 'something');
     } catch (error) {
@@ -159,12 +170,34 @@ if (Meteor.isServer) {
   });
 }
 
+Tinytest.addAsync('collection is excluded as expected', async function (test) {
+
+  await Meteor.callAsync('resetDogs');
+
+  const doc = { _id: '1', name: 'fido' };
+
+  await Meteor.callAsync('insertDog', doc);
+
+  if (Meteor.isServer) {
+    const foundDoc = await dogs.findOneAsync(doc._id);
+    test.equal(foundDoc.deleted, undefined);
+  }
+
+  await Meteor.callAsync('removeDog', { _id: doc._id });
+
+  if (Meteor.isServer) {
+    const allDocs = await dogs.find().fetchAsync();
+    test.equal(allDocs.length, 0)
+  }
+});
+
 Tinytest.add('configure', function (test) {
   const newConfig = {
     deleted: 'isDeleted',
     deletedAt: 'deletedAt',
     autoFilter: false,
     overrideRemove: false,
+    exclude: ['dogs']
   };
   SoftDelete.configure(newConfig);
   const config = SoftDelete.config;
@@ -172,4 +205,5 @@ Tinytest.add('configure', function (test) {
   test.equal(config.deletedAt, 'deletedAt');
   test.equal(config.autoFilter, false);
   test.equal(config.overrideRemove, false);
+  test.equal(config.exclude, ['dogs']);
 });

@@ -6,6 +6,7 @@ export interface SoftDeleteConfig {
   deletedAt: string;
   autoFilter: boolean;
   overrideRemove: boolean;
+  exclude: string[];
 }
 
 /**
@@ -23,6 +24,7 @@ export function configure(options: {
   deletedAt?: string;
   autoFilter?: boolean;
   overrideRemove?: boolean;
+  exclude?: string[];
 }): SoftDeleteConfig;
 
 /**

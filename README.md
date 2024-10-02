@@ -9,6 +9,7 @@ Soft Delete is an easy way to add soft deletes to your Meteor app. Its key featu
 * Recover soft deleted docs with `recoverAsync` collection method
 * Explicitly soft delete with `softRemoveAsync` collection method (optional)
 * Optionally add a `deletedAt` timestamp
+* Optionally exclude specific collections
 * Compatible with Meteor `2.8.1+` and `3.0+`
 
 ## Usage
@@ -46,6 +47,7 @@ const config = {
   deletedAt: '', // add the name of the field you'd like to use for a deletedAt timestamp, e.g. 'deletedAt', if you want to include it on your docs
   autoFilter: true, // automatically adds the { [deleted]: false } filter to your queries
   overrideRemove: true, // overrides the Collection.removeAsync method to make it a soft delete instead
+  exclude: ['roles', 'role-assignment'] // exclude specific collections from using soft delete. defaults to excluding the collections created the meteor roles package
 };
 ```
 

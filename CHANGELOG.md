@@ -1,3 +1,6 @@
+## 0.3.0
+* feat: configure specific collections to *not* use soft delete with `exclude`
+
 ## 0.2.1
 * fix: use a different method to add configured `deleted` flag when creating a user
 
