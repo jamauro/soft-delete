@@ -18,9 +18,9 @@ Soft Delete is an easy way to add soft deletes to your Meteor app. Its key featu
 `meteor add jam:soft-delete`
 
 ### Deleting permanently
-By default, this package overrides the `removeAsync` collection method so that it soft deletes the document(s) with a boolean flag rather that removing them from the database. To delete permanently, pass in the option `soft: false`, e.g.:
+By default, this package overrides the `removeAsync` collection method so that it soft deletes the document(s) with a boolean flag rather that removing them from the database. To delete permanently, pass in the option `forever: true`, e.g.:
 ```js
-Collection.removeAsync(/* your filter */, { soft: false })
+Collection.removeAsync(/* your filter */, { forever: true })
 ```
 
 If you prefer, you can prevent overriding the `removeAsync` by setting `overrideRemove: false`. See [Configuring](#configuring-optional) for more details.
@@ -47,7 +47,7 @@ const config = {
   deletedAt: '', // add the name of the field you'd like to use for a deletedAt timestamp, e.g. 'deletedAt', if you want to include it on your docs
   autoFilter: true, // automatically adds the { [deleted]: false } filter to your queries
   overrideRemove: true, // overrides the Collection.removeAsync method to make it a soft delete instead
-  exclude: ['roles', 'role-assignment'] // exclude specific collections from using soft delete. defaults to excluding the collections created the meteor roles package
+  exclude: ['roles', 'role-assignment'] // exclude specific collections from using soft delete. defaults to excluding the collections created by the meteor roles package
 };
 ```
 
@@ -60,3 +60,7 @@ SoftDelete.configure({
   // ... change the defaults here ... //
 });
 ```
+
+## Support
+
+If you find this package valuable, I hope you'll consider [supporting](https://github.com/sponsors/jamauro) it. :) Maybe you pass on the cost to your client(s) or factor in the time it saved you and your team.

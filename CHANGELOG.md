@@ -1,3 +1,6 @@
+## 0.4.0
+* breaking: rename option to permanently remove from `soft: false` to `forever: true`
+
 ## 0.3.0
 * feat: configure specific collections to *not* use soft delete with `exclude`
 

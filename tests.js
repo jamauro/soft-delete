@@ -15,7 +15,7 @@ const insertDoc = async doc => collection.insertAsync(doc);
 const removeDoc = async (selector, options) => collection.removeAsync(selector, options);
 const softRemoveDoc = async selector => collection.softRemoveAsync(selector);
 const recoverDoc = async selector => collection.recoverAsync(selector);
-const reset = async () => collection.removeAsync({}, { soft: false });
+const reset = async () => collection.removeAsync({}, { forever: true });
 
 const insertDog = async doc => dogs.insertAsync(doc);
 const removeDog = async (selector, options) => dogs.removeAsync(selector, options);
@@ -109,12 +109,12 @@ Tinytest.addAsync('recoverAsync with string selector', async function (test) {
   }
 });
 
-Tinytest.addAsync('removeAsync with soft: false', async function (test) {
+Tinytest.addAsync('removeAsync with forever: true', async function (test) {
   await Meteor.callAsync('reset');
   const doc = { _id: 'doc3', name: 'Test Doc' };
 
   await Meteor.callAsync('insertDoc', doc);
-  await Meteor.callAsync('removeDoc', { _id: doc._id }, { soft: false });
+  await Meteor.callAsync('removeDoc', { _id: doc._id }, { forever: true });
 
   const removedDoc = await collection.findOneAsync({ _id: doc._id });
 
@@ -151,7 +151,7 @@ Tinytest.addAsync('deleted is automatically added on insert', async function (te
 
 if (Meteor.isServer) {
   Tinytest.addAsync('deleted is automatically added when creating a user', async function (test) {
-    await Meteor.users.removeAsync({}, { soft: false })
+    await Meteor.users.removeAsync({}, { forever: true })
     await Accounts.onCreateUser((options, user) => {
       user.something = 'something';
       return user;

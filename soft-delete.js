@@ -136,7 +136,7 @@ Meteor.startup(() => {
   if (overrideRemove) {
     const originalRemove = Mongo.Collection.prototype.removeAsync;
     Mongo.Collection.prototype.removeAsync = async function(selector, options = {}) {
-      if (options.soft === false || exclude.includes(this._name)) {
+      if (options.forever === true || exclude.includes(this._name)) {
         return originalRemove.call(this, selector);
       }
 
